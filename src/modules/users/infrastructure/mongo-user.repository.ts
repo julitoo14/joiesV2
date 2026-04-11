@@ -14,6 +14,10 @@ export class MongoUserRepository implements IUserRepository {
         @InjectModel(UserPersistence.name) private readonly userModel: Model<UserDocument>,
     ) { }
 
+    async update(user: User): Promise<User> {
+        return this.save(user);
+    }
+
     async save(user: User): Promise<User> {
         const persistenceData = UserMapper.toPersistence(user);
 
