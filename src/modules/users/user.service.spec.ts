@@ -134,4 +134,36 @@ describe('UsersService', () => {
             .toThrow(UnauthorizedException);
     });
 
+    it('debería lanzar NotFoundException si el usuario a editar no existe', async () => {
+        const normalUser = new User({ id: 'id-pepe', name: 'Pepe', username: 'pepe', role: 'seller' });
+
+        mockUserRepository.findOneById.mockImplementation((id: string) => {
+            if (id === normalUser.id) return Promise.resolve(normalUser);
+            return Promise.resolve(null);
+        });
+
+        await expect(service.update(normalUser.id, {
+            id: 'id-inexistente',
+            name: 'Changed Name'
+        }))
+            .rejects
+            .toThrow(NotFoundException);
+    });
+
+    it('debería lanzar NotFoundException si el usuario que ejecuta la acción no existe', async () => {
+        const normalUser = new User({ id: 'id-pepe', name: 'Pepe', username: 'pepe', role: 'seller' });
+
+        mockUserRepository.findOneById.mockImplementation((id: string) => {
+            if (id === normalUser.id) return Promise.resolve(normalUser);
+            return Promise.resolve(null);
+        });
+
+        await expect(service.update(normalUser.id, {
+            id: normalUser.id,
+            name: 'Changed Name'
+        }))
+            .rejects
+            .toThrow(NotFoundException);
+    });
+
 });
