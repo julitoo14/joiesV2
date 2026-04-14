@@ -31,7 +31,7 @@ describe('UsersService', () => {
 
     it('debería lanzar UnauthorizedException si un no-admin intenta borrar', async () => {
         // 1. Seteamos los datos: un usuario que NO es admin
-        const normalUser = new User({ id: 'id-pepe', name: 'Pepe', username: 'pepe', role: 'seller' });
+        const normalUser = new User({ id: 'id-pepe', name: 'Pepe', email: 'pepe@pepe.com', role: 'user' });
         mockUserRepository.findOneById.mockResolvedValue(normalUser);
 
         // 2. Intentamos borrar y esperamos que falle
@@ -42,7 +42,7 @@ describe('UsersService', () => {
 
     it('debería llamar al repositorio si el que borra es Admin', async () => {
         // 1. Seteamos un Admin
-        const adminUser = new User({ id: 'id-admin', name: 'Julian', username: 'admin', role: 'admin' });
+        const adminUser = new User({ id: 'id-admin', name: 'Julian', email: 'admin@pepe.com', role: 'admin' });
         mockUserRepository.findOneById.mockResolvedValue(adminUser);
         mockUserRepository.delete.mockResolvedValue(true);
 
@@ -54,7 +54,7 @@ describe('UsersService', () => {
     });
 
     it('debería actualizar la fecha de acceso y guardar el usuario', async () => {
-        const user = new User({ id: 'id-test', name: 'Test', username: 'test', role: 'seller' });
+        const user = new User({ id: 'id-test', name: 'Test', email: 'test@pepe.com', role: 'user' });
         mockUserRepository.findOneById.mockResolvedValue(user);
         mockUserRepository.save.mockResolvedValue(user);
 
@@ -72,8 +72,8 @@ describe('UsersService', () => {
     });
 
     it('debería permitir a un admin editar cualquier campo de otro usuario', async () => {
-        const adminUser = new User({ id: 'id-admin', name: 'Admin', username: 'admin', role: 'admin' });
-        const targetUser = new User({ id: 'id-target', name: 'Old Name', username: 'target', role: 'seller' });
+        const adminUser = new User({ id: 'id-admin', name: 'Admin', email: 'admin@test.com', role: 'admin' });
+        const targetUser = new User({ id: 'id-target', name: 'Old Name', email: 'target@test.com', role: 'user' });
 
         // Mockeamos que encontramos al usuario a editar o al de ejecución
         mockUserRepository.findOneById.mockImplementation((id: string) => {
@@ -98,7 +98,7 @@ describe('UsersService', () => {
     });
 
     it('debería permitir a un usuario editar solo su propio perfil', async () => {
-        const user = new User({ id: 'id-self', name: 'Self', username: 'self', role: 'seller' });
+        const user = new User({ id: 'id-self', name: 'Self', email: 'self@test.com', role: 'user' });
 
         // Mockeamos que encontramos al usuario
         mockUserRepository.findOneById.mockResolvedValue(user);
@@ -115,8 +115,8 @@ describe('UsersService', () => {
     });
 
     it('debería lanzar UnauthorizedException si un no-admin intenta editar otro usuario', async () => {
-        const normalUser = new User({ id: 'id-pepe', name: 'Pepe', username: 'pepe', role: 'seller' });
-        const victimUser = new User({ id: 'id-victima', name: 'Victima', username: 'victima', role: 'seller' });
+        const normalUser = new User({ id: 'id-pepe', name: 'Pepe', email: 'pepe@test.com', role: 'user' });
+        const victimUser = new User({ id: 'id-victima', name: 'Victima', email: 'victima@test.com', role: 'user' });
 
         // Mockeamos que encontramos al usuario a editar
         mockUserRepository.findOneById.mockImplementation((id: string) => {
@@ -135,7 +135,7 @@ describe('UsersService', () => {
     });
 
     it('debería lanzar NotFoundException si el usuario a editar no existe', async () => {
-        const normalUser = new User({ id: 'id-pepe', name: 'Pepe', username: 'pepe', role: 'seller' });
+        const normalUser = new User({ id: 'id-pepe', name: 'Pepe', email: 'pepe@test.com', role: 'user' });
 
         mockUserRepository.findOneById.mockImplementation((id: string) => {
             if (id === normalUser.id) return Promise.resolve(normalUser);
@@ -151,14 +151,14 @@ describe('UsersService', () => {
     });
 
     it('debería lanzar NotFoundException si el usuario que ejecuta la acción no existe', async () => {
-        const normalUser = new User({ id: 'id-pepe', name: 'Pepe', username: 'pepe', role: 'seller' });
+        const normalUser = new User({ id: 'id-pepe', name: 'Pepe', email: 'pepe@test.com', role: 'user' });
 
         mockUserRepository.findOneById.mockImplementation((id: string) => {
             if (id === normalUser.id) return Promise.resolve(normalUser);
             return Promise.resolve(null);
         });
 
-        await expect(service.update(normalUser.id, {
+        await expect(service.update('id-inexistente', {
             id: normalUser.id,
             name: 'Changed Name'
         }))
