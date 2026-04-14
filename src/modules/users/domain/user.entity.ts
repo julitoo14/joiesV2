@@ -1,46 +1,62 @@
 interface UserProps { // Interface para los datos que entran al constructor.
     id?: string;
     name: string;
-    username: string;
+    email: string;
     password?: string;
     role?: string;
     createdAt?: Date;
     updatedAt?: Date;
     lastActiveAt?: Date;
-    tiendaNube?: {
-        userId: string;
-        accessToken: string;
+    status?: 'active' | 'inactive' | 'suspended';
+    botCount?: number;
+    plan?: 'FREE' | 'PRO' | 'UNLIMITED';
+    binanceConfig?: {
+        apiKey: string;
+        apiSecret: string;
+    };
+    preferences?: {
+        currency?: string;
+        theme?: string;
+        alertsEnabled?: boolean;
     };
 }
 
 export class User {
     readonly id: string; // readonly para que no se pueda modificar
     public name: string;
-    public username: string;
+    public email: string;
     private password: string; // private para que no se pueda modificar ni acceder desde fuera de la clase
     public role: string;
     readonly createdAt: Date; // readonly para que no se pueda modificar
     public updatedAt: Date;
     public lastActiveAt: Date;
-    public tiendaNube?: {
-        userId: string;
-        accessToken: string;
-    }
+    public status: 'active' | 'inactive' | 'suspended';
+    public botCount: number;
+    public plan: 'FREE' | 'PRO' | 'UNLIMITED';
+    public binanceConfig?: {
+        apiKey: string;
+        apiSecret: string;
+    };
+    public preferences: {
+        currency?: string;
+        theme?: string;
+        alertsEnabled?: boolean;
+    };
 
     constructor(props: UserProps) { // Recibe un objeto con las propiedades del usuario
         this.id = props.id || '';
         this.name = props.name || '';
-        this.username = props.username || '';
+        this.email = props.email || '';
         this.password = props.password || '';
         this.role = props.role || 'seller';
         this.createdAt = props.createdAt || new Date();
         this.updatedAt = props.updatedAt || new Date();
         this.lastActiveAt = props.lastActiveAt || new Date();
-        this.tiendaNube = props.tiendaNube;
-    }
-
-    isLinkedToTiendaNube(): boolean {
-        return !!this.tiendaNube?.accessToken && !!this.tiendaNube?.userId;
+        this.status = props.status || 'active';
+        this.botCount = props.botCount || 0;
+        this.plan = props.plan || 'FREE';
+        this.binanceConfig = props.binanceConfig;
+        this.preferences = props.preferences || { currency: 'USD', theme: 'light', alertsEnabled: true };
     }
 
     isAdmin(): boolean {
@@ -55,15 +71,20 @@ export class User {
         this.updatedAt = new Date();
     }
 
-    toJSON() { // Método para convertir el objeto a JSON, sin incluir el password
+    toJSON() { // Método para convertir el objeto a JSON, sin incluir el password ni apiSecret
         return {
             id: this.id,
             name: this.name,
-            username: this.username,
+            email: this.email,
             role: this.role,
+            status: this.status,
+            botCount: this.botCount,
+            plan: this.plan,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
-            tiendaNube: this.tiendaNube,
+            lastActiveAt: this.lastActiveAt,
+            binanceConfig: this.binanceConfig ? { apiKey: this.binanceConfig.apiKey } : undefined,
+            preferences: this.preferences,
         };
     }
 }

@@ -8,13 +8,17 @@ export class UserMapper {
         return new User({
             id: raw._id.toString(), // Convertimos el ObjectId de Mongo a string
             name: raw.name,
-            username: raw.username,
+            email: raw.email,
             password: raw.password,
             role: raw.role,
             createdAt: raw.createdAt,
             updatedAt: raw.updatedAt,
             lastActiveAt: raw.lastActiveAt,
-            tiendaNube: raw.tiendaNube,
+            status: raw.status,
+            botCount: raw.botCount,
+            plan: raw.plan,
+            binanceConfig: raw.binanceConfig,
+            preferences: raw.preferences,
         });
     }
 
@@ -22,11 +26,15 @@ export class UserMapper {
     static toPersistence(user: User): Partial<UserPersistence> {
         return {
             name: user.name,
-            username: user.username,
+            email: user.email,
             password: (user as any).password, // El hash
             role: user.role,
             lastActiveAt: user.lastActiveAt,
-            tiendaNube: user.tiendaNube,
+            status: user.status,
+            botCount: user.botCount,
+            plan: user.plan,
+            binanceConfig: user.binanceConfig,
+            preferences: user.preferences,
         };
     }
 }

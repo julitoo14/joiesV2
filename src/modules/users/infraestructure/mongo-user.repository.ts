@@ -29,8 +29,8 @@ export class MongoUserRepository implements IUserRepository {
         return UserMapper.toDomain(updatedUser);
     }
 
-    async findOneByUsername(username: string): Promise<User | null> {
-        const userDoc = await this.userModel.findOne({ username }).exec();
+    async findOneByEmail(email: string): Promise<User | null> {
+        const userDoc = await this.userModel.findOne({ email }).exec();
         if (!userDoc) return null;
         return UserMapper.toDomain(userDoc);
     }

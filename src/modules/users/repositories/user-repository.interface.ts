@@ -8,7 +8,7 @@ export interface IUserRepository {
 
     // Búsquedas (devuelven nuestra Entidad, no el documento de Mongo)
     findOneById(id: string): Promise<User | null>;
-    findOneByUsername(username: string): Promise<User | null>;
+    findOneByEmail(email: string): Promise<User | null>;
 
     // Para el listado de la administración de la fábrica
     findAll(): Promise<User[]>;

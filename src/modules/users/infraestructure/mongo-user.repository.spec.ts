@@ -28,13 +28,13 @@ describe('MongoUserRepository', () => {
     });
 
     it('debería guardar y recuperar un usuario correctamente', async () => {
-        const user = new User({ name: 'Julián', username: 'juliantest', role: 'admin' });
+        const user = new User({ name: 'Julián', email: 'julian@example.com', role: 'admin' });
 
         // Guardamos
         const savedUser = await repository.save(user);
 
         // Buscamos
-        const foundUser = await repository.findOneByUsername('juliantest');
+        const foundUser = await repository.findOneByEmail('julian@example.com');
 
         expect(foundUser).toBeDefined();
         expect(foundUser?.name).toBe('Julián');

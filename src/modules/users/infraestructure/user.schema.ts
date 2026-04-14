@@ -12,21 +12,37 @@ export class UserPersistence {
     name: string;
 
     @Prop({ required: true, unique: true })
-    username: string;
+    email: string;
 
     @Prop({ required: true })
     password: string;
 
-    @Prop({ default: 'seller', enum: ['seller', 'admin'] })
+    @Prop({ default: 'user', enum: ['user', 'admin'] }) // Change default role from seller to user
     role: string;
 
     @Prop({ default: Date.now })
     lastActiveAt: Date;
 
-    @Prop({ type: Object }) // Se guarda el objeto de Tiendanube como un sub-documento
-    tiendaNube?: {
-        userId: string;
-        accessToken: string;
+    @Prop({ default: 'active', enum: ['active', 'inactive', 'suspended'] })
+    status: string;
+
+    @Prop({ default: 0 })
+    botCount: number;
+
+    @Prop({ default: 'FREE', enum: ['FREE', 'PRO', 'UNLIMITED'] })
+    plan: string;
+
+    @Prop({ type: Object })
+    binanceConfig?: {
+        apiKey: string;
+        apiSecret: string;
+    };
+
+    @Prop({ type: Object, default: { currency: 'USD', theme: 'light', alertsEnabled: true } })
+    preferences?: {
+        currency?: string;
+        theme?: string;
+        alertsEnabled?: boolean;
     };
 }
 
