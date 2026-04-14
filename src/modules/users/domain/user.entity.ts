@@ -63,6 +63,11 @@ export class User {
         return this.role === 'admin';
     }
 
+    recordActivity(): void {
+        this.lastActiveAt = new Date();
+        this.updatedAt = new Date();
+    }
+
     changePassword(password: string) { // Método para cambiar la contraseña
         if (!password) {
             throw new Error('Password is required');
