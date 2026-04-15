@@ -13,9 +13,6 @@ export interface IUserRepository {
     // Para el listado de la administración de la fábrica
     findAll(): Promise<User[]>;
 
-    // Actualiza el usuario
-    update(user: User): Promise<User>;
-
     // Ejecutado por el admin
     delete(id: string): Promise<boolean>;
 }
