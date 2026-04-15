@@ -1,0 +1,60 @@
+export abstract class BaseBotExecutor {
+    public botId: string;
+    public pair: string;
+    public status: 'RUNNING' | 'PAUSED' | 'STOPPED';
+    public settings: any;
+
+    constructor(botId: string, pair: string, settings: any, initialStatus: 'RUNNING' | 'PAUSED' | 'STOPPED' = 'STOPPED') {
+        this.botId = botId;
+        this.pair = pair;
+        this.settings = settings;
+        this.status = initialStatus;
+    }
+
+    /**
+     * Inicia los subprocesos del bot (ej. conectar a websocket)
+     */
+    abstract start(): void | Promise<void>;
+
+    /**
+     * Detiene los subprocesos y limpia memoria (ej. desconectar websockets)
+     */
+    abstract stop(): void | Promise<void>;
+
+    /**
+     * Método principal donde ocurre la toma de decisión
+     */
+    abstract executeLogic(price: number): void | Promise<void>;
+
+    /**
+     * Pausa el bot (no evalúa operaciones pero se mantiene vivo en memoria)
+     */
+    public pause(): void {
+        if (this.status !== 'RUNNING') {
+            console.warn(`[Bot ${this.botId}] Intento de pausa ignorado, el estado actual es ${this.status}`);
+            return;
+        }
+        this.status = 'PAUSED';
+        console.log(`[Bot ${this.botId}] Pausado.`);
+    }
+
+    /**
+     * Reanuda la ejecución del bot
+     */
+    public resume(): void {
+        if (this.status !== 'PAUSED') {
+            console.warn(`[Bot ${this.botId}] Intento de reanudación ignorado, el estado actual es ${this.status}`);
+            return;
+        }
+        this.status = 'RUNNING';
+        console.log(`[Bot ${this.botId}] Reanudado.`);
+    }
+
+    /**
+     * Permite inyectarle un nuevo set de configuración en caliente (Ej: actualizar upper/lower borders de la grid)
+     */
+    public applySettings(newSettings: any): void {
+        this.settings = { ...this.settings, ...newSettings };
+        console.log(`[Bot ${this.botId}] Nuevas settings aplicadas en caliente.`);
+    }
+}
