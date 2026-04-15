@@ -48,4 +48,23 @@ export class AuthService {
             access_token: this.jwtService.sign(payload),
         };
     }
+
+    /**
+     * Registra un nuevo usuario en el sistema con contraseña encriptada.
+     */
+    async register(userData: any): Promise<{ access_token: string }> {
+        const { password, ...details } = userData;
+
+        // Hash de contraseñas salt rondas = 10
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = await this.usersService.create({
+            ...details,
+            password: hashedPassword,
+            role: 'user', // Forzamos el rol "user" por seguridad al registrar fuera
+        });
+
+        // Automáticamente lo loguea para que ya obtenga su token en la App FrontEnd
+        return this.login(newUser.toJSON());
+    }
 }

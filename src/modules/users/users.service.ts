@@ -55,6 +55,20 @@ export class UsersService {
         return this.userRepository.findOneByEmail(email);
     }
 
+    async create(userData: Partial<User>): Promise<User> {
+        // Validación de existencia previa
+        const existing = await this.findOneByEmail(userData.email!);
+        if (existing) {
+            throw new UnauthorizedException('El correo ya está en uso');
+        }
+
+        // Creamos la instancia con el constructor de dominio
+        const newUser = new User(userData as object as any);
+        
+        // Guardamos
+        return this.userRepository.save(newUser);
+    }
+
     async update(executorId: string, updateData: Partial<User>): Promise<User> {
         // 1. Buscamos el usuario destino (el que va a recibir los cambios)
         const targetId = updateData.id;

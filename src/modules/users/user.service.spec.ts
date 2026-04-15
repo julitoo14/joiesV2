@@ -206,4 +206,32 @@ describe('UsersService', () => {
         expect(result).toBe(null);
     });
 
+    describe('create', () => {
+        it('debería arrojar error de Autorización si el email ya existe', async () => {
+            const user = new User({ id: 'dummy', name: 'Dupe', email: 'pepe@pepe.com', role: 'user' });
+            mockUserRepository.findOneByEmail.mockResolvedValue(user);
+
+            await expect(service.create({ email: 'pepe@pepe.com', name: 'Nuevo' }))
+                .rejects
+                .toThrow(UnauthorizedException);
+        });
+
+        it('debería instanciar un User con DDD constructor y guardarlo exitosamente', async () => {
+            mockUserRepository.findOneByEmail.mockResolvedValue(null); // Correo libre
+            
+            // Simular respuesta del repo (el usuario guardado con ID asignado)
+            const createdUser = new User({ id: '123', email: 'nuevo@joies.com', name: 'Valid', role: 'user' });
+            mockUserRepository.save.mockResolvedValue(createdUser);
+
+            const result = await service.create({ email: 'nuevo@joies.com', name: 'Valid' });
+
+            // Verifica que devolvió la promesa sana del repo
+            expect(result.id).toBe('123');
+            
+            // Verifica que llamó a guardar con las propiedades correctas aislando fuga de mocks previos
+            expect(mockUserRepository.save).toHaveBeenCalledWith(
+                expect.objectContaining({ email: 'nuevo@joies.com', name: 'Valid' })
+            );
+        });
+    });
 });

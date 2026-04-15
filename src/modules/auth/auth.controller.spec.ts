@@ -8,6 +8,7 @@ describe('AuthController', () => {
     const mockAuthService = {
         login: jest.fn(),
         validateUser: jest.fn(),
+        register: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -68,6 +69,25 @@ describe('AuthController', () => {
                 role: 'user',
                 name: 'Trader',
             });
+        });
+    });
+
+    describe('register', () => {
+        it('debería registrar y retornar un token llamando al servicio', async () => {
+            const registerData = {
+                email: 'nuevo@test.com',
+                password: 'PassSecret_12',
+                name: 'Julian'
+            };
+
+            mockAuthService.register.mockResolvedValue({
+                access_token: 'valid-token'
+            });
+
+            const result = await controller.register(registerData);
+            
+            expect(result).toEqual({ access_token: 'valid-token' });
+            expect(mockAuthService.register).toHaveBeenCalledWith(registerData);
         });
     });
 });

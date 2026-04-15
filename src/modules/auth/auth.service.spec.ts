@@ -121,4 +121,43 @@ describe('AuthService', () => {
             expect(signCall).toHaveProperty('role', 'user');
         });
     });
+
+    describe('register', () => {
+        it('debería encriptar contraseña y delegar la creación al usersService', async () => {
+            const rawData = {
+                email: 'test@joies.com',
+                password: 'plain_password',
+                name: 'Joies Test'
+            };
+
+            const newUserMock = new User({
+                id: 'id-register',
+                email: 'test@joies.com',
+                role: 'user',
+            });
+
+            // Mock bcrypt.hash
+            (bcrypt.hash as jest.Mock).mockResolvedValue('hashed_password');
+            mockUsersService.create = jest.fn().mockResolvedValue(newUserMock);
+            
+            // Mock de nuestro propio authService.login para verificar que pasa al login post-register
+            const loginSpy = jest.spyOn(authService, 'login').mockResolvedValue({ access_token: 'magical_register_token' });
+
+            const result = await authService.register(rawData);
+
+            expect(bcrypt.hash).toHaveBeenCalledWith('plain_password', 10);
+            
+            expect(mockUsersService.create).toHaveBeenCalledWith({
+                email: 'test@joies.com',
+                name: 'Joies Test',
+                password: 'hashed_password',
+                role: 'user', // verifica seguridad manual
+            });
+
+            expect(loginSpy).toHaveBeenCalledWith(newUserMock.toJSON());
+            expect(result).toEqual({ access_token: 'magical_register_token' });
+            
+            loginSpy.mockRestore(); // limpieza
+        });
+    });
 });

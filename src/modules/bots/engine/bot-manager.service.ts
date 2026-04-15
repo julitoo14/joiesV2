@@ -51,7 +51,8 @@ export class BotManagerService implements OnModuleInit {
 
         switch (botEntity.type) {
             case 'GRID':
-                executor = new GridBotExecutor(idString, botEntity.pair, botEntity.settings, botEntity.status);
+                // Por defecto, físicamente la memoria arranca detenida hasta que reciba un .start() 
+                executor = new GridBotExecutor(idString, botEntity.pair, botEntity.settings, 'STOPPED');
                 break;
             // Futuro: case 'DCA': executor = new DcaBotExecutor(...); break;
             default:
