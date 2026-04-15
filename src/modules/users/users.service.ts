@@ -47,6 +47,14 @@ export class UsersService {
         await this.userRepository.save(user);
     }
 
+    async emailExists(email: string): Promise<boolean> {
+        return this.userRepository.emailExists(email);
+    }
+
+    async findOneByEmail(email: string): Promise<User | null> {
+        return this.userRepository.findOneByEmail(email);
+    }
+
     async update(executorId: string, updateData: Partial<User>): Promise<User> {
         // 1. Buscamos el usuario destino (el que va a recibir los cambios)
         const targetId = updateData.id;

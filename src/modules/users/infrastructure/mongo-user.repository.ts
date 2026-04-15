@@ -41,6 +41,11 @@ export class MongoUserRepository implements IUserRepository {
         return UserMapper.toDomain(userDoc);
     }
 
+    async emailExists(email: string): Promise<boolean> {
+        const userDoc = await this.userModel.findOne({ email }).exec();
+        return !!userDoc;
+    }
+
     async delete(id: string): Promise<boolean> {
         const result = await this.userModel.findByIdAndDelete(id).exec();
         return !!result;
