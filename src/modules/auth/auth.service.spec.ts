@@ -11,8 +11,9 @@ jest.mock('bcrypt');
 describe('AuthService', () => {
     let authService: AuthService;
 
-    const mockUsersService = {
+    const mockUsersService: any = {
         findOneByEmail: jest.fn(),
+        create: jest.fn(),
     };
 
     const mockJwtService = {
@@ -133,6 +134,7 @@ describe('AuthService', () => {
             const newUserMock = new User({
                 id: 'id-register',
                 email: 'test@joies.com',
+                name: 'Joies Test',
                 role: 'user',
             });
 
