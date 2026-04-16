@@ -59,7 +59,16 @@ export class BotManagerService implements OnModuleInit {
         switch (botEntity.type) {
             case 'GRID':
                 // Por defecto, físicamente la memoria arranca detenida hasta que reciba un .start() 
-                executor = new GridBotExecutor(idString, botEntity.pair, botEntity.settings, user.binanceConfig, 'STOPPED');
+                executor = new GridBotExecutor(
+                    idString, 
+                    botEntity.pair, 
+                    botEntity.settings, 
+                    user.binanceConfig, 
+                    'STOPPED',
+                    async (state, stats) => {
+                        await this.botsService.updateBotPersistence(idString, state, stats);
+                    }
+                );
                 break;
             // Futuro: case 'DCA': executor = new DcaBotExecutor(...); break;
             default:
@@ -88,6 +97,25 @@ export class BotManagerService implements OnModuleInit {
         }
 
         await instance.start();
+    }
+
+    /**
+     * Preview de arranque: Instancia temporalmente el bot para consultar balances y calcular la compra inicial.
+     */
+    public async previewStart(botId: string): Promise<any> {
+        const botData = await this.botsService.getBotById(botId);
+        const user = await this.usersService.findOne(botData.userId);
+
+        // Creamos un executor temporal solo para el preview, sin registrarlo en el mapa
+        const tempExecutor = new GridBotExecutor(
+            botId,
+            botData.pair,
+            botData.settings,
+            user.binanceConfig,
+            'STOPPED',
+        );
+
+        return tempExecutor.previewStart();
     }
 
     public async pauseBot(botId: string): Promise<void> {

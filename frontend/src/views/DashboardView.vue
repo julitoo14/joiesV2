@@ -56,6 +56,23 @@
 
             <!-- Settings Snapshot -->
             <div class="space-y-3 mb-6 bg-slate-900/40 p-4 rounded-xl border border-slate-800/50">
+              <div v-if="bot.stats && bot.stats.totalSales > 0" class="pb-3 mb-3 border-b border-slate-800/80">
+                <div class="flex justify-between items-center">
+                  <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Performance</span>
+                  <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded">Real Live</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                  <div>
+                    <p class="text-[10px] text-slate-500">Ventas</p>
+                    <p class="text-sm font-bold text-white">{{ bot.stats.totalSales }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-[10px] text-slate-500">Profit Neto</p>
+                    <p class="text-sm font-bold text-emerald-400 font-mono">+${{ bot.stats.profitNet?.toFixed(2) }}</p>
+                  </div>
+                </div>
+              </div>
+
               <div class="flex justify-between text-sm" v-for="(val, key) in bot.settings" :key="key">
                 <span class="text-slate-500 capitalize">{{ String(key).replace(/([A-Z])/g, ' $1').trim() }}</span>
                 <span class="text-slate-300 font-mono">{{ typeof val === 'number' ? new Intl.NumberFormat().format(val) : val }}</span>
@@ -134,34 +151,81 @@
         
         <form @submit.prevent="submitModal" class="space-y-4">
           
-          <div v-if="!isEditing">
-            <label class="block text-sm font-medium text-slate-400 mb-1">Par (Symbol)</label>
-            <input v-model="modalData.pair" type="text" class="input-field uppercase font-mono" placeholder="BTCUSDT" required />
-          </div>
-
-          <div v-if="!isEditing">
-            <label class="block text-sm font-medium text-slate-400 mb-1">Estrategia</label>
-            <select v-model="modalData.type" class="input-field appearance-none" required>
-              <option value="GRID">Grid Bot</option>
-              <option value="DCA">DCA Bot (pronto)</option>
-            </select>
-          </div>
-
-          <div v-if="modalData.type === 'GRID'" class="space-y-4 mt-4 p-4 bg-slate-900/50 rounded-xl border border-slate-800">
-            <h4 class="text-sm font-semibold text-primary mb-2">GRID SETTINGS</h4>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">Líneas (Grupos)</label>
-                <input v-model.number="modalData.settings.gridLines" type="number" class="input-field py-2 text-sm" required />
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">Margen %</label>
-                <input v-model.number="modalData.settings.marginPercent" type="number" step="0.1" class="input-field py-2 text-sm" required />
-              </div>
+          <div v-if="!isEditing" class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-1">Par (Symbol)</label>
+              <select v-model="modalData.pair" @change="fetchCurrentPrice" class="input-field bg-slate-800" required>
+                <option value="BTCUSDT">BTCUSDT (Bitcoin)</option>
+                <option value="ETHUSDT">ETHUSDT (Ethereum)</option>
+                <option value="SOLUSDT">SOLUSDT (Solana)</option>
+              </select>
             </div>
             <div>
-              <label class="block text-xs text-slate-400 mb-1">Take Profit Tgt</label>
-              <input v-model.number="modalData.settings.takeProfit" type="number" class="input-field py-2 text-sm font-mono" />
+              <label class="block text-sm font-medium text-slate-400 mb-1">Estrategia</label>
+              <select v-model="modalData.type" class="input-field bg-slate-800" required>
+                <option value="GRID">Grid Bot</option>
+                <option value="DCA">DCA Bot (pronto)</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="modalData.type === 'GRID'" class="space-y-4 mt-4 p-5 bg-slate-900/50 rounded-2xl border border-slate-800 shadow-inner">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-xs font-bold text-primary tracking-widest uppercase">Grid Engine Settings</h4>
+              <div v-if="currentPrice" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20">
+                Precio Actual: ${{ currentPrice.toLocaleString() }}
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Capital a Invertir (USDT)</label>
+              <div class="relative">
+                <input v-model.number="modalData.settings.capital" type="number" class="input-field py-2.5 pl-9 font-mono text-sm" placeholder="150" required />
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">$</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Precio Mínimo</label>
+                <input v-model.number="modalData.settings.lowerPrice" type="number" step="any" class="input-field py-2 text-sm font-mono" required />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Precio Máximo</label>
+                <input v-model.number="modalData.settings.upperPrice" type="number" step="any" class="input-field py-2 text-sm font-mono" required />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Cantidad de Grillas (Líneas)</label>
+              <input v-model.number="modalData.settings.gridLines" type="number" min="2" class="input-field py-2 text-sm" required />
+            </div>
+
+            <!-- Live Projections Section -->
+            <div class="pt-4 mt-2 border-t border-slate-800/80 space-y-2">
+              <div class="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-[10px] text-blue-300 mb-3 flex items-start">
+                <Orbit class="w-3.5 h-3.5 mr-2 mt-0.5 flex-shrink-0" />
+                <span>Al iniciar, el sistema comprará automáticamente el 50% de {{ modalData.pair.replace('USDT', '') }} a mercado para balancear la grilla.</span>
+              </div>
+
+              <div class="flex justify-between items-center text-[11px]">
+                <span class="text-slate-500">Inversión por Grilla:</span>
+                <span :class="projections.investmentPerGrid < 5.5 ? 'text-red-400 font-bold' : 'text-slate-200'">
+                  ${{ projections.investmentPerGrid.toFixed(2) }} USDT
+                </span>
+              </div>
+              <div class="flex justify-between items-center text-[11px]">
+                <span class="text-slate-500">Espaciado (Step):</span>
+                <span class="text-slate-200">${{ projections.stepSize.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between items-center text-[11px] font-bold">
+                <span class="text-slate-400">Profit Neto Est. (por venta):</span>
+                <span class="text-emerald-400">{{ projections.netProfitPercent.toFixed(2) }}% (~${{ projections.netProfitUsd.toFixed(2) }} USD)</span>
+              </div>
+              
+              <div v-if="projections.investmentPerGrid < 5.5" class="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-[10px] text-red-400 leading-tight">
+                ⚠️ **Inversión insuficiente:** Binance requiere al menos $5 por orden. Aumenta el capital o reduce las líneas.
+              </div>
             </div>
           </div>
 
@@ -173,13 +237,74 @@
       </div>
     </div>
 
+    <!-- Preview Start Modal -->
+    <div v-if="showPreview" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+      <div class="glass-panel w-full max-w-md rounded-2xl p-6 relative">
+        <button @click="showPreview = false" class="absolute top-5 right-5 text-slate-400 hover:text-white">
+          <X class="w-5 h-5" />
+        </button>
+
+        <h2 class="text-lg font-bold text-white mb-1">Confirmar Inicio del Bot</h2>
+        <p class="text-xs text-slate-400 mb-5">Resumen de lo que sucederá al activar el motor</p>
+
+        <div v-if="previewLoading" class="flex justify-center py-10">
+          <Loader2 class="w-8 h-8 animate-spin text-primary" />
+        </div>
+
+        <div v-else-if="previewData" class="space-y-3">
+          <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 space-y-2.5">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500">Precio Actual</span>
+              <span class="text-white font-mono">${{ previewData.currentPrice?.toLocaleString() }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500">Balance Existente ({{ previewData.baseAsset }})</span>
+              <span class="text-white font-mono">{{ previewData.existingBalance?.toFixed(6) }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500">Necesario para Ventas</span>
+              <span class="text-white font-mono">{{ previewData.requiredAmount?.toFixed(6) }} {{ previewData.baseAsset }}</span>
+            </div>
+
+            <div class="border-t border-slate-800 pt-2">
+              <div v-if="previewData.needsToBuy > 0" class="flex justify-between text-xs">
+                <span class="text-amber-400 font-semibold">Se comprará a mercado</span>
+                <span class="text-amber-400 font-mono font-bold">{{ previewData.needsToBuy?.toFixed(6) }} {{ previewData.baseAsset }} (~${{ previewData.estimatedCost?.toFixed(2) }})</span>
+              </div>
+              <div v-else class="text-xs text-emerald-400 font-semibold">
+                ✓ Balance suficiente. No se necesita compra inicial.
+              </div>
+            </div>
+
+            <div class="flex justify-between text-xs pt-1">
+              <span class="text-slate-500">Órdenes de Compra</span>
+              <span class="text-blue-400 font-mono">{{ previewData.buyLevels }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500">Órdenes de Venta</span>
+              <span class="text-orange-400 font-mono">{{ previewData.sellLevels }}</span>
+            </div>
+          </div>
+
+          <div class="flex space-x-3 mt-4">
+            <button @click="showPreview = false" class="btn-outline flex-1 py-2.5 text-sm">Cancelar</button>
+            <button @click="confirmStart" class="btn-primary flex-1 py-2.5 text-sm flex justify-center" :disabled="previewLoading">
+              <Loader2 v-if="startingBot" class="animate-spin w-4 h-4 mr-2" />
+              <span>Confirmar e Iniciar</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, onUnmounted, reactive, computed } from 'vue';
 import Sidebar from '@/components/Sidebar.vue';
 import { useBotsStore } from '@/stores/bots';
+import api from '@/api/axios';
 import { 
   Plus, Loader2, Orbit, Cpu, Play, Pause, Square, Trash2, X, Sliders 
 } from 'lucide-vue-next';
@@ -191,15 +316,42 @@ const showModal = ref(false);
 const modalLoading = ref(false);
 const isEditing = ref(false);
 const editId = ref('');
+const currentPrice = ref<number | null>(null);
 
 const modalData = reactive({
   pair: 'BTCUSDT',
   type: 'GRID',
   settings: {
-    gridLines: 10,
-    marginPercent: 0.5,
-    takeProfit: 100000
+    capital: 150,
+    lowerPrice: 0,
+    upperPrice: 0,
+    gridLines: 10
   } as any
+});
+
+const projections = computed(() => {
+  const { capital, lowerPrice, upperPrice, gridLines } = modalData.settings;
+  if (!capital || !lowerPrice || !upperPrice || !gridLines || gridLines < 2) {
+    return { investmentPerGrid: 0, stepSize: 0, netProfitPercent: 0, netProfitUsd: 0 };
+  }
+
+  const investmentPerGrid = capital / gridLines;
+  const stepSize = (upperPrice - lowerPrice) / gridLines;
+  
+  // Profit bruto estimado (%) = (Step / Precio Promedio)
+  const avgPrice = (upperPrice + lowerPrice) / 2;
+  const grossProfitPercent = (stepSize / avgPrice) * 100;
+  
+  // Descontamos comisiones de Binance (0.1% compra + 0.1% venta = 0.2% total)
+  const netProfitPercent = Math.max(0, grossProfitPercent - 0.2);
+  const netProfitUsd = (investmentPerGrid * netProfitPercent) / 100;
+
+  return {
+    investmentPerGrid,
+    stepSize,
+    netProfitPercent,
+    netProfitUsd
+  };
 });
 
 const statusColors: Record<string, any> = {
@@ -210,9 +362,44 @@ const statusColors: Record<string, any> = {
 
 onMounted(() => {
   botsStore.fetchBots();
+  // Auto-refresh cada 10s para ver stats live de bots activos
+  refreshInterval = setInterval(() => {
+    if (botsStore.bots.some(b => b.status === 'RUNNING')) {
+      botsStore.refreshBots();
+    }
+  }, 10000);
 });
 
+let refreshInterval: ReturnType<typeof setInterval>;
+onUnmounted(() => {
+  if (refreshInterval) clearInterval(refreshInterval);
+});
+
+// --- Preview Start ---
+const showPreview = ref(false);
+const previewLoading = ref(false);
+const previewData = ref<any>(null);
+const previewBotId = ref('');
+const startingBot = ref(false);
+
 const actionBot = async (id: string, action: 'start'|'pause'|'resume'|'stop') => {
+  if (action === 'start') {
+    // Mostrar preview modal en vez de confirm()
+    previewBotId.value = id;
+    showPreview.value = true;
+    previewLoading.value = true;
+    previewData.value = null;
+    try {
+      previewData.value = await botsStore.previewStart(id);
+    } catch (e: any) {
+      alert('Error al obtener preview: ' + (e.response?.data?.message || e.message));
+      showPreview.value = false;
+    } finally {
+      previewLoading.value = false;
+    }
+    return;
+  }
+
   loadingAction.value = id;
   try {
     await botsStore.actionBot(id, action);
@@ -224,18 +411,53 @@ const actionBot = async (id: string, action: 'start'|'pause'|'resume'|'stop') =>
   }
 };
 
+const confirmStart = async () => {
+  startingBot.value = true;
+  try {
+    await botsStore.actionBot(previewBotId.value, 'start');
+    showPreview.value = false;
+    await botsStore.refreshBots();
+  } catch (e: any) {
+    const errorMsg = e.response?.data?.message || e.message || 'Error desconocido';
+    alert(`Error al iniciar el bot: ${errorMsg}`);
+  } finally {
+    startingBot.value = false;
+  }
+};
+
 const deleteBot = async (id: string) => {
   if (confirm('¿Estás seguro que deseas eliminar e incinerar este Bot completamente?')) {
     await botsStore.deleteBot(id);
   }
 };
 
+const fetchCurrentPrice = async () => {
+  try {
+    const { data } = await api.get(`/bots/ticker/${modalData.pair}`);
+    currentPrice.value = data.last;
+    
+    // Si es creación y los precios están en 0, sugerimos un rango del +- 5%
+    if (!isEditing.value && (!modalData.settings.lowerPrice || modalData.settings.lowerPrice === 0)) {
+      modalData.settings.lowerPrice = Number((data.last * 0.95).toFixed(2));
+      modalData.settings.upperPrice = Number((data.last * 1.05).toFixed(2));
+    }
+  } catch (error) {
+    console.error('Error fetching price:', error);
+  }
+};
+
 const openCreateModal = () => {
   isEditing.value = false;
-  modalData.pair = 'ETHUSDT';
+  modalData.pair = 'BTCUSDT';
   modalData.type = 'GRID';
-  modalData.settings = { gridLines: 10, marginPercent: 0.5, takeProfit: 4000 };
+  modalData.settings = { 
+    capital: 150, 
+    lowerPrice: 0, 
+    upperPrice: 0, 
+    gridLines: 10 
+  };
   showModal.value = true;
+  fetchCurrentPrice();
 };
 
 const openEditModal = (bot: any) => {

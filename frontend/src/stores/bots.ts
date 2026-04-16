@@ -16,6 +16,16 @@ export const useBotsStore = defineStore('bots', () => {
     }
   };
 
+  /** Refresco silencioso sin loading spinner (para polling) */
+  const refreshBots = async () => {
+    try {
+      const response = await api.get('/bots');
+      bots.value = response.data;
+    } catch (e) {
+      // Silencioso
+    }
+  };
+
   const createBot = async (payload: { pair: string, type: string, settings: any }) => {
     const res = await api.post('/bots', payload);
     await fetchBots();
@@ -45,10 +55,15 @@ export const useBotsStore = defineStore('bots', () => {
     return res.data;
   };
 
+  const previewStart = async (botId: string) => {
+    const res = await api.get(`/bots/${botId}/preview-start`);
+    return res.data;
+  };
+
   const deleteBot = async (botId: string) => {
     await api.delete(`/bots/${botId}`);
     bots.value = bots.value.filter(b => b._id !== botId);
   };
 
-  return { bots, loading, fetchBots, createBot, updateSettings, actionBot, deleteBot };
+  return { bots, loading, fetchBots, refreshBots, createBot, updateSettings, actionBot, previewStart, deleteBot };
 });
