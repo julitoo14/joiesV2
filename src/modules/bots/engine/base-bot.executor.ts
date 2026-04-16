@@ -3,11 +3,19 @@ export abstract class BaseBotExecutor {
     public pair: string;
     public status: 'RUNNING' | 'PAUSED' | 'STOPPED';
     public settings: any;
+    public binanceConfig?: { apiKey: string; apiSecret: string };
 
-    constructor(botId: string, pair: string, settings: any, initialStatus: 'RUNNING' | 'PAUSED' | 'STOPPED' = 'STOPPED') {
+    constructor(
+        botId: string, 
+        pair: string, 
+        settings: any, 
+        binanceConfig?: { apiKey: string; apiSecret: string }, 
+        initialStatus: 'RUNNING' | 'PAUSED' | 'STOPPED' = 'STOPPED'
+    ) {
         this.botId = botId;
         this.pair = pair;
         this.settings = settings;
+        this.binanceConfig = binanceConfig;
         this.status = initialStatus;
     }
 

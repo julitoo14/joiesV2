@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request, BadRequestException } from '@nestjs/common';
 import { BotsService } from './bots.service';
 import { BotManagerService } from './engine/bot-manager.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -61,9 +61,15 @@ export class BotsController {
 
     @Post(':id/start')
     async startBot(@Request() req: any, @Param('id') botId: string) {
-        const bot = await this.botsService.updateBotStatus(req.user.userId, botId, 'RUNNING');
-        await this.botManager.startBot(botId);
-        return { message: 'Bot iniciado', status: bot.status };
+        let bot = await this.botsService.updateBotStatus(req.user.userId, botId, 'RUNNING');
+        try {
+            await this.botManager.startBot(botId);
+            return { message: 'Bot iniciado', status: bot.status };
+        } catch (error: any) {
+            // Revertimos a STOPPED en la DB porque falló al iniciar en memoria (ej: llaves erróneas)
+            bot = await this.botsService.updateBotStatus(req.user.userId, botId, 'STOPPED');
+            throw new BadRequestException(error.message || 'Error al iniciar el bot');
+        }
     }
 
     @Post(':id/pause')

@@ -216,8 +216,9 @@ const actionBot = async (id: string, action: 'start'|'pause'|'resume'|'stop') =>
   loadingAction.value = id;
   try {
     await botsStore.actionBot(id, action);
-  } catch (e) {
-    alert('Error enviando la señal al Engine. Verifica la consola.');
+  } catch (e: any) {
+    const errorMsg = e.response?.data?.message || e.message || 'Error desconocido';
+    alert(`Error al procesar la acción: ${errorMsg}`);
   } finally {
     loadingAction.value = null;
   }

@@ -16,13 +16,15 @@
           </div>
         </div>
 
-        <!-- Personal Settings Card -->
-        <div class="glass-panel rounded-2xl p-8">
-          <h2 class="text-lg font-bold text-white mb-6 flex items-center">
-            <UserCircle class="w-5 h-5 mr-2 text-primary" />
-            Datos Personales
-          </h2>
-          <form @submit.prevent="updateProfile" class="space-y-5">
+        <!-- Formularios de usuario -->
+        <form @submit.prevent="updateProfile" class="space-y-8">
+          
+          <!-- Personal Settings Card -->
+          <div class="glass-panel rounded-2xl p-8">
+            <h2 class="text-lg font-bold text-white mb-6 flex items-center">
+              <UserCircle class="w-5 h-5 mr-2 text-primary" />
+              Datos Personales
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-medium text-slate-400 mb-1">Nombre Completo</label>
@@ -33,17 +35,69 @@
                 <input :value="authStore.user?.email" type="email" class="input-field opacity-50 cursor-not-allowed" disabled />
               </div>
             </div>
+          </div>
 
-            <div class="pt-4 flex justify-end">
-               <button type="submit" class="btn-primary px-8" :disabled="savingProfile">
-                <Loader2 v-if="savingProfile" class="animate-spin w-4 h-4 mr-2 inline" />
-                Guardar Cambios
-              </button>
+          <!-- Preferences Settings Card -->
+          <div class="glass-panel rounded-2xl p-8">
+            <h2 class="text-lg font-bold text-white mb-6 flex items-center">
+              <Sliders class="w-5 h-5 mr-2 text-primary" />
+              Preferencias
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Moneda Principal</label>
+                <select v-model="profileForm.preferences.currency" class="input-field bg-slate-800">
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="ARS">ARS</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Tema</label>
+                <select v-model="profileForm.preferences.theme" class="input-field bg-slate-800">
+                  <option value="light">Claro</option>
+                  <option value="dark">Oscuro</option>
+                </select>
+              </div>
+              <div class="flex items-center mt-6">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" v-model="profileForm.preferences.alertsEnabled" class="sr-only peer">
+                  <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  <span class="ml-3 text-sm font-medium text-slate-300">Activar Alertas</span>
+                </label>
+              </div>
             </div>
-            
-            <p v-if="saveSuccess" class="text-emerald-400 text-sm font-medium text-right mt-2 transition-all">¡Perfil actualizado correctamente!</p>
-          </form>
-        </div>
+          </div>
+
+          <!-- Binance API Card -->
+          <div class="glass-panel rounded-2xl p-8">
+            <h2 class="text-lg font-bold text-white mb-6 flex items-center">
+              <Key class="w-5 h-5 mr-2 text-primary" />
+              Configuración de Binance API
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">API Key</label>
+                <input v-model="profileForm.binanceConfig.apiKey" type="text" class="input-field" placeholder="Ingresa tu API Key de Binance" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">API Secret</label>
+                <input v-model="profileForm.binanceConfig.apiSecret" type="password" class="input-field" placeholder="Déjalo en blanco si no quieres cambiarlo" />
+                <p class="text-xs text-slate-500 mt-1">Por seguridad, el secreto no se muestra una vez guardado.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones Guardar -->
+          <div class="flex items-center justify-end space-x-4">
+             <p v-if="saveSuccess" class="text-emerald-400 text-sm font-medium transition-all">¡Perfil actualizado correctamente!</p>
+             <button type="submit" class="btn-primary px-8 py-3" :disabled="savingProfile">
+              <Loader2 v-if="savingProfile" class="animate-spin w-5 h-5 mr-2 inline" />
+              Guardar Cambios
+            </button>
+          </div>
+          
+        </form>
 
         <!-- Admin Table Card -->
         <div v-if="authStore.user?.role === 'admin'" class="glass-panel rounded-2xl p-8 border-l-4 border-l-primary">
@@ -102,14 +156,23 @@ import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import Sidebar from '@/components/Sidebar.vue';
 import api from '@/api/axios';
-import { UserCircle, Shield, Loader2, Trash2, RefreshCw } from 'lucide-vue-next';
+import { UserCircle, Shield, Loader2, Trash2, RefreshCw, Sliders, Key } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const savingProfile = ref(false);
 const saveSuccess = ref(false);
 
 const profileForm = ref({
-  name: ''
+  name: '',
+  binanceConfig: {
+    apiKey: '',
+    apiSecret: ''
+  },
+  preferences: {
+    currency: 'USD',
+    theme: 'light',
+    alertsEnabled: true
+  }
 });
 
 // Estado Admin
@@ -118,7 +181,17 @@ const loadingUsers = ref(false);
 
 onMounted(() => {
   if (authStore.user) {
-    profileForm.value.name = authStore.user.name;
+    profileForm.value.name = authStore.user.name || '';
+    if (authStore.user.binanceConfig) {
+      profileForm.value.binanceConfig.apiKey = authStore.user.binanceConfig.apiKey || '';
+      // apiSecret no viene del backend
+    }
+    if (authStore.user.preferences) {
+      profileForm.value.preferences.currency = authStore.user.preferences.currency || 'USD';
+      profileForm.value.preferences.theme = authStore.user.preferences.theme || 'light';
+      profileForm.value.preferences.alertsEnabled = authStore.user.preferences.alertsEnabled ?? true;
+    }
+    
     if (authStore.user.role === 'admin') {
       fetchUsers();
     }
@@ -130,8 +203,25 @@ const updateProfile = async () => {
   savingProfile.value = true;
   saveSuccess.value = false;
   try {
-    await api.patch(`/users/${authStore.user.id}`, { name: profileForm.value.name });
+    const payload: any = { 
+      name: profileForm.value.name,
+      preferences: profileForm.value.preferences
+    };
+
+    // Solo enviamos binanceConfig si se llenó al menos la API Key (o si ya existía y la está editando)
+    if (profileForm.value.binanceConfig.apiKey) {
+       payload.binanceConfig = { apiKey: profileForm.value.binanceConfig.apiKey };
+       if (profileForm.value.binanceConfig.apiSecret) {
+         payload.binanceConfig.apiSecret = profileForm.value.binanceConfig.apiSecret;
+       }
+    }
+
+    await api.patch(`/users/${authStore.user.id}`, payload);
     await authStore.fetchProfile();
+    
+    // Resetear el campo de secreto
+    profileForm.value.binanceConfig.apiSecret = '';
+
     saveSuccess.value = true;
     setTimeout(() => { saveSuccess.value = false }, 3000);
   } catch (e) {

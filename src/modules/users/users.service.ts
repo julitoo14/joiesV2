@@ -88,6 +88,14 @@ export class UsersService {
         // 4. Aplicamos los cambios al objeto destino (evitando sobreescribir el ID principal)
         const updates = { ...updateData };
         delete updates.id;
+
+        if (updates.binanceConfig) {
+            updates.binanceConfig = { ...targetUser.binanceConfig, ...updates.binanceConfig };
+        }
+        if (updates.preferences) {
+            updates.preferences = { ...targetUser.preferences, ...updates.preferences };
+        }
+
         Object.assign(targetUser, updates);
 
         // 5. Guardamos el resultado en la base de datos
