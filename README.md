@@ -1,98 +1,89 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+<div align="center">
+  <h1>📈 Crypto Trading Engine & Dashboard</h1>
+  <p>
+    <strong>Desarrollado por: Julián García Suárez</strong><br>
+    <em>Full Stack Web Developer | Node.js, Vue.js & MongoDB</em><br>
+    <em>Estudiante de Tecnicatura Universitaria en Programación (UTN)</em>
+  </p>
+</div>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+---
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Sobre el Proyecto
 
-## Description
+Este proyecto consiste en un **motor de ejecución de bots de trading automatizados** para criptomonedas, integrado de forma nativa con la API de Binance. El objetivo principal es migrar y escalar lógicas de trading (originalmente prototipadas en Python) a una arquitectura robusta, segura y altamente escalable utilizando **NestJS** y **Vue.js 3**.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+**Estado del Proyecto:** En desarrollo activo (WIP). Actualmente enfocado en la integración core del motor de grillas (Grid Bot) y el diseño del dashboard de monitoreo en tiempo real.
 
-## Project setup
+---
 
-```bash
-$ npm install
-```
+## 🛠️ Stack Tecnológico
 
-## Compile and run the project
+*   **Backend:** NestJS (Node.js framework) con TypeScript estricto.
+*   **Frontend:** Vue.js 3 (Composition API) + Tailwind CSS.
+*   **Base de Datos:** MongoDB (Atlas).
+*   **Seguridad:** Passport.js (JWT) y Crypto (algoritmo AES-256).
+*   **Integración:** Binance API (REST & WebSockets).
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+## 🏗️ Arquitectura y Patrones de Diseño
 
-# production mode
-$ npm run start:prod
-```
+El backend ha sido diseñado bajo los principios de **Clean Architecture** para garantizar el fácil mantenimiento, testing y la escalabilidad del sistema:
 
-## Run tests
+*   **Strategy Pattern:** Implementado para la ejecución de bots. Cada estrategia (Grid, RSI, MACD, etc.) hereda de una clase base abstracta, permitiendo añadir nuevas lógicas de trading modulares sin modificar el núcleo del motor.
+*   **Singleton Pattern:** Utilizado en el `BotManager` para gestionar el ciclo de vida de los procesos concurrentes en memoria y evitar colisiones de ejecución.
+*   **Repository Pattern:** Desacoplamiento total entre la lógica de negocio y la persistencia de datos en MongoDB, facilitando futuros cambios de base de datos si fuera necesario.
+*   **Seguridad de Grado Bancario:** Implementación de encriptación simétrica AES-256 para el resguardo de API Secrets de los usuarios, asegurando que las credenciales críticas solo sean legibles por el motor de ejecución en tiempo real y jamás queden expuestas.
 
-```bash
-# unit tests
-$ npm run test
+---
 
-# e2e tests
-$ npm run test:e2e
+## 📋 Funcionalidades Principales
 
-# test coverage
-$ npm run test:cov
-```
+*   ⚙️ **Gestión del Ciclo de Vida:** Inicio, pausa y detención de bots de forma totalmente dinámica e instantánea desde el dashboard.
+*   🔒 **Autenticación Robusta:** Gestión segura de usuarios y sesiones mediante JWT (JSON Web Tokens).
+*   📊 **Monitoreo en Tiempo Real:** Visualización detallada de balances, holdings (cartera) e historial de órdenes ejecutadas.
+*   💾 **Persistencia y Recuperación de Estados:** El sistema es capaz de recuperar y reanudar bots y procesos de compra/venta activos automáticamente tras un reinicio imprevisto del servidor.
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🔧 Instalación (Entorno de Desarrollo)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/julitoo14/trading-bots.git
+   cd trading-bots
+   ```
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+2. **Configurar variables de entorno:**
+   Crear un archivo `.env` en la raíz del proyecto siguiendo un formato similar a este:
+   ```env
+   MONGO_URI=tu_mongodb_uri
+   JWT_SECRET=tu_secreto
+   ENCRYPTION_KEY=tu_llave_maestra_aes
+   ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+3. **Instalar dependencias del backend:**
+   ```bash
+   npm install
+   ```
 
-## Resources
+4. **Instalar dependencias del frontend:**
+   ```bash
+   cd frontend
+   npm install
+   cd ..
+   ```
 
-Check out a few resources that may come in handy when working with NestJS:
+5. **Ejecutar la aplicación (Backend y Frontend concurrentemente):**
+   ```bash
+   npm run dev
+   ```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 📈 Próximos Pasos (Roadmap)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- [ ] Implementación de WebSockets para actualización de precios en milisegundos sin necesidad de refresco.
+- [ ] Desarrollo de módulos de analítica avanzada para cálculo de PnL neto (Profit and Loss).
+- [ ] Contenerización del entorno completo (Base de Datos, Backend, Frontend) mediante Docker y Docker Compose.
